@@ -82,9 +82,34 @@ def find_similar_items_by_image(image_path, item_type, top_n=15):
         return [p for p in [paths[i] for i in indices] if p != image_path][:top_n]
 
 def save_final_outfit():
-    with open("final_outfit.json", "w") as f:
-        json.dump(session.get('final_outfit', {}), f, indent=2)
-    return "Your final outfit has been saved to `final_outfit.json`!"
+    filename = "final_outfit.json"
+
+    # Load existing data if file exists
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            try:
+                data = json.load(f)
+            except json.JSONDecodeError:
+                data = {"pairs": []}
+    else:
+        data = {"pairs": []}
+
+    # Add the current outfit pair
+    new_pair = {
+        "topwear": session.get("final_outfit", {}).get("topwear", ""),
+        "bottomwear": session.get("final_outfit", {}).get("bottomwear", "")
+    }
+
+    # Avoid adding empty or duplicate entries
+    if new_pair["topwear"] and new_pair["bottomwear"] and new_pair not in data["pairs"]:
+        data["pairs"].append(new_pair)
+
+    # Save updated data
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=2)
+
+    return "Your final outfit has been added to `final_outfit.json`!"
+
 
 
 # ==============================================================================
