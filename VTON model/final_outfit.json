@@ -1,0 +1,44 @@
+{
+  "pairs": [
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00001_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27925.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00009_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27930.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00010_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27935.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00419_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27940.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00593_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27945.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/00902_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27950.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/01499_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27955.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/09647_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27960.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/10631_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27965.jpg"
+    },
+    {
+      "topwear": "clothes_tryon_dataset/train/cloth/10871_00.jpg",
+      "bottomwear": "pants_dataset/Images_BW/27970.jpg"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "male": {
+    "Fair": {
+      "combinations": [
+        { "upperwear": "Sky Blue", "bottomwear": "White" },
+        { "upperwear": "Pink", "bottomwear": "Beige" },
+        { "upperwear": "Green", "bottomwear": "Gray" },
+        { "upperwear": "Purple", "bottomwear": "Cream" },
+        { "upperwear": "Yellow", "bottomwear": "Khaki" }
+      ]
+    },
+    "Light": {
+      "combinations": [
+        { "upperwear": "Blue", "bottomwear": "Gray" },
+        { "upperwear": "Purple", "bottomwear": "Brown" },
+        { "upperwear": "Green", "bottomwear": "White" },
+        { "upperwear": "Pink", "bottomwear": "Blue" },
+        { "upperwear": "Blue", "bottomwear": "Beige" }
+      ]
+    },
+    "Medium": {
+      "combinations": [
+        { "upperwear": "Green", "bottomwear": "Brown" },
+        { "upperwear": "Orange", "bottomwear": "Blue" },
+        { "upperwear": "Teal", "bottomwear": "Beige" },
+        { "upperwear": "Blue", "bottomwear": "Gray" },
+        { "upperwear": "Red", "bottomwear": "Khaki" }
+      ]
+    },
+    "Olive": {
+      "combinations": [
+        { "upperwear": "Navy", "bottomwear": "Green" },
+        { "upperwear": "Orange", "bottomwear": "Beige" },
+        { "upperwear": "Brown", "bottomwear": "Dark Brown" },
+        { "upperwear": "Gray", "bottomwear": "Brown" },
+        { "upperwear": "Green", "bottomwear": "Khaki" }
+      ]
+    },
+    "Dark": {
+      "combinations": [
+        { "upperwear": "Gray", "bottomwear": "Navy" },
+        { "upperwear": "Green", "bottomwear": "Black" },
+        { "upperwear": "Red", "bottomwear": "Beige" },
+        { "upperwear": "Yellow", "bottomwear": "Blue" },
+        { "upperwear": "Orange", "bottomwear": "Green" }
+      ]
+    }
+  },
+  "female": {
+    "Fair": {
+      "combinations": [
+        { "upperwear": "Peach", "bottomwear": "White" },
+        { "upperwear": "Green", "bottomwear": "Blue" },
+        { "upperwear": "Purple", "bottomwear": "Cream" },
+        { "upperwear": "Pink", "bottomwear": "White" },
+        { "upperwear": "Pink", "bottomwear": "Gray" }
+      ]
+    },
+    "Light": {
+      "combinations": [
+        { "upperwear": "Blue", "bottomwear": "Beige" },
+        { "upperwear": "Purple", "bottomwear": "Gray" },
+        { "upperwear": "Green", "bottomwear": "Brown" },
+        { "upperwear": "Purple", "bottomwear": "White" },
+        { "upperwear": "Yellow", "bottomwear": "Gray" }
+      ]
+    },
+    "Medium": {
+      "combinations": [
+        { "upperwear": "Pink", "bottomwear": "Beige" },
+        { "upperwear": "Green", "bottomwear": "Brown" },
+        { "upperwear": "Blue", "bottomwear": "Blue" },
+        { "upperwear": "Orange", "bottomwear": "Blue" },
+        { "upperwear": "Yellow", "bottomwear": "Gray" }
+      ]
+    },
+    "Olive": {
+      "combinations": [
+        { "upperwear": "Yellow", "bottomwear": "Green" },
+        { "upperwear": "Orange", "bottomwear": "Beige" },
+        { "upperwear": "Blue", "bottomwear": "Navy" },
+        { "upperwear": "Brown", "bottomwear": "Green" },
+        { "upperwear": "Purple", "bottomwear": "Beige" }
+      ]
+    },
+    "Dark": {
+      "combinations": [
+        { "upperwear": "Yellow", "bottomwear": "Red" },
+        { "upperwear": "White", "bottomwear": "Beige" },
+        { "upperwear": "Green", "bottomwear": "Black" },
+        { "upperwear": "Orange", "bottomwear": "Green" },
+        { "upperwear": "Red", "bottomwear": "Navy" }
+      ]
+    }
+  }
+}
