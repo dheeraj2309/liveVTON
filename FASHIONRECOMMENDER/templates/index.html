@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stylist Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff; --success-color: #28a745; --danger-color: #dc3545; --warning-color: #ffc107;
+            --light-color: #ffffff; --dark-color: #212529; --text-color: #495057; --bg-color: #f8f9fa; --border-color: #dee2e6;
+            --font-family: 'Poppins', sans-serif; --border-radius: 12px; --shadow: 0 8px 24px rgba(0,0,0,0.05); --transition-speed: 0.3s;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; }
+        .container { display: flex; background-color: var(--light-color); }
+        h1, h2, h3, h4, h5, h6 { font-weight: 600; color: var(--dark-color); }
+        hr { border: 0; border-top: 1px solid var(--border-color); margin: 2.5rem 0; }
+        /* Layout */
+        .sidebar { width: 380px; padding: 2.5rem; border-right: 1px solid var(--border-color); height: 100vh; overflow-y: auto; position: sticky; top: 0; }
+        .main-content { flex-grow: 1; padding: 2.5rem; min-height: 100vh; }
+        .sidebar-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+        /* Forms & Buttons */
+        .profile-form .form-group { margin-bottom: 1.25rem; }
+        .profile-form label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .profile-form input, .profile-form select, .profile-form textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: var(--font-family); transition: border-color var(--transition-speed), box-shadow var(--transition-speed); }
+        .profile-form input:focus, .profile-form select:focus, .profile-form textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.8rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-family: var(--font-family); font-weight: 600; transition: all var(--transition-speed) ease; text-decoration: none; }
+        .btn-primary { background-color: var(--primary-color); color: var(--light-color); }
+        .btn-primary:hover { background-color: #0069d9; transform: translateY(-2px); }
+        .btn-danger { background-color: var(--danger-color); color: var(--light-color); }
+        .btn-danger:hover { background-color: #c82333; transform: translateY(-2px); }
+        .btn-block { width: 100%; margin-top: 1rem; }
+        /* Grids and Cards */
+        .grid-container { display: grid; gap: 2rem; }
+        .outfit-grid { grid-template-columns: 1fr 1fr; }
+        .similar-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+        .item-card { background: var(--light-color); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); position: relative; transition: transform var(--transition-speed), box-shadow var(--transition-speed); }
+        .item-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
+        .item-card__image-wrapper { position: relative; background-color: #eee; }
+        .item-card__image { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+        .item-card__content { padding: 1rem; text-align: center; }
+        .item-card__prompt { font-size: 0.8rem; color: #6c757d; font-style: italic; }
+        .item-card__actions { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1)); display: flex; align-items: center; justify-content: center; gap: 1rem; opacity: 0; visibility: hidden; transition: all var(--transition-speed); }
+        .item-card:hover .item-card__actions { opacity: 1; visibility: visible; }
+        .action-btn { background-color: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition-speed); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .action-btn:hover { transform: scale(1.1); background-color: var(--light-color); }
+        .action-btn svg { width: 22px; height: 22px; }
+        .action-btn.like svg { stroke: var(--success-color); }
+        .action-btn.dislike svg { stroke: var(--danger-color); }
+        .action-btn.choose svg { stroke: var(--warning-color); fill: var(--warning-color); }
+        .item-card__chosen-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(40, 167, 69, 0.8); color: var(--light-color); display: flex; align-items: center; justify-content: center; }
+        .item-card__chosen-overlay svg { width: 60px; height: 60px; }
+        .final-outfit-card { text-align: center; padding: 4rem; background-color: #e2f0d9; border-radius: var(--border-radius); }
+        .final-outfit-card__title { color: var(--success-color); }
+        /* JS-Controlled UI Elements */
+        .loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all var(--transition-speed); backdrop-filter: blur(5px); }
+        .loader-overlay.active { opacity: 1; visibility: visible; }
+        .loader { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        #toast-container { position: fixed; top: 2rem; right: 2rem; z-index: 1001; display: flex; flex-direction: column; gap: 1rem; }
+        .toast { padding: 1rem 1.5rem; border-radius: 8px; color: var(--light-color); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transform: translateX(120%); transition: transform 0.5s ease-in-out; }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background-color: var(--success-color); }
+        .toast.error { background-color: var(--danger-color); }
+        #dynamic-content { transition: opacity var(--transition-speed); }
+        #dynamic-content.loading { opacity: 0.5; }
+        /* Responsive */
+        @media (max-width: 1200px) { .sidebar { width: 320px; padding: 2rem; } .main-content { padding: 2rem; } }
+        @media (max-width: 992px) { .container { flex-direction: column; } .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-color); } }
+        @media (max-width: 768px) { .outfit-grid { grid-template-columns: 1fr; } .sidebar, .main-content { padding: 1.5rem; } }
+    </style>
+</head>
+<body>
+    <svg width="0" height="0" style="position:absolute"><defs>
+        <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></symbol>
+        <symbol id="icon-like" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></symbol>
+        <symbol id="icon-dislike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v7a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></symbol>
+        <symbol id="icon-choose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></symbol>
+    </defs></svg>
+    <div class="loader-overlay"><div class="loader"></div></div>
+    <div id="toast-container"></div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <svg width="32" height="32" fill="var(--primary-color)"><use xlink:href="#icon-user"></use></svg>
+                <h2>Your Style Profile</h2>
+            </div>
+            <form id="profile-form" class="profile-form ajax-form" action="{{ url_for('update') }}" method="post">
+                <input type="hidden" name="action" value="generate">
+                <div class="form-group"><label for="age">Age</label><input type="number" id="age" name="age" value="{{ session.user_profile.age }}"></div>
+                <div class="form-group"><label for="gender">Gender</label><select id="gender" name="gender"><option value="female" {% if session.user_profile.gender == 'female' %}selected{% endif %}>Female</option><option value="male" {% if session.user_profile.gender == 'male' %}selected{% endif %}>Male</option></select></div>
+                <div class="form-group"><label for="occasion">Occasion</label><input type="text" id="occasion" name="occasion" value="{{ session.user_profile.occasion }}"></div>
+                <div class="form-group"><label for="color">Color Preference</label><input type="text" id="color" name="color" value="{{ session.user_profile.color }}"></div>
+                <div class="form-group"><label for="style_type">Style</label><select id="style_type" name="style_type"><option value="casual" {% if session.user_profile.style_type == 'casual' %}selected{% endif %}>Casual</option><option value="formal" {% if session.user_profile.style_type == 'formal' %}selected{% endif %}>Formal</option><option value="streetwear" {% if session.user_profile.style_type == 'streetwear' %}selected{% endif %}>Streetwear</option></select></div>
+                <div class="form-group"><label for="comments">Any other preferences?</label><textarea id="comments" name="comments">{{ session.user_profile.comments }}</textarea></div>
+                <button type="submit" class="btn btn-primary btn-block">Generate My Outfit</button>
+            </form>
+            <form class="ajax-form" action="{{ url_for('update') }}" method="post">
+                <input type="hidden" name="action" value="reset">
+                <button type="submit" class="btn btn-danger btn-block">Start Over</button>
+            </form>
+        </aside>
+
+        <main class="main-content">
+            <h1>🤖 AI Stylist Pro</h1>
+            <p style="margin-bottom: 2rem;">Your personalized fashion assistant, powered by AI.</p>
+            <div id="dynamic-content">
+                {% include '_dynamic_content.html' %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loader = document.querySelector('.loader-overlay');
+        const dynamicContent = document.getElementById('dynamic-content');
+        
+        // --- Centralized Form Submission Handler ---
+        document.addEventListener('submit', async (e) => {
+            // Only handle forms marked for AJAX
+            if (!e.target.classList.contains('ajax-form')) return;
+
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+
+            // Show loading state
+            loader.classList.add('active');
+            dynamicContent.classList.add('loading');
+
+            try {
+                const response = await fetch(form.getAttribute('action'),{
+                    method: form.method,
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+                const data = await response.json();
+                
+                // Update main content with new HTML from server
+                dynamicContent.innerHTML = data.html;
+
+                // Show a toast message if the server sent one
+                if (data.toast) {
+                    showToast(data.toast.text, data.toast.type);
+                }
+
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showToast('An error occurred. Please try again.', 'error');
+            } finally {
+                // Hide loading state
+                loader.classList.remove('active');
+                dynamicContent.classList.remove('loading');
+            }
+        });
+
+        // --- Toast Notification System ---
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            // Automatically remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                // Remove from DOM after transition ends
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 5000);
+        }
+    });
+    </script>
+</body>
+</html>
