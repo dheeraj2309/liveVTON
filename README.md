@@ -13,6 +13,9 @@ The dataset required for this project can be downloaded from **[this link](<http
 
 After downloading, unzip the files and place the dataset in VTON-Model folder.
 
+Pants Dataset can be downloaded from **[this link](<https://drive.google.com/drive/folders/1e_wmvNyQkskpgaOo_HspvP80QEhO4D8D?usp=drive_link>)**.
+
+
 ## Super-Resolution
 The super resolution model can be donwloaded from **[this link](<https://drive.google.com/file/d/1BJS9t1MrNtogHVVsiFSU5gxPCNlnH7cW/view?usp=sharing>)**.
 
@@ -24,8 +27,8 @@ Also in the Real_ESRGAN do "pip install -r requirements.txt"
 
 ## ⚙️ Run
 run the streamlit app: streamlit run app.py
+run the flask app:run flask_ap.py
 
-Paste all the files from FASHIONRECOMMENDER into VTON-model.
 
 
 
