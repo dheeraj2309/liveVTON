@@ -25,6 +25,8 @@ Also in the Real_ESRGAN do "pip install -r requirements.txt"
 ## ⚙️ Run
 run the streamlit app: streamlit run app.py
 
+Paste all the files from FASHIONRECOMMENDER into VTON-model.
+
 
 
 
