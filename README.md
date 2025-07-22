@@ -38,6 +38,7 @@ rename .env.example in FASHIONRECOMMENDER to .env and add your own gemini api ke
 
 Paste all the files from FASHIONRECOMMENDER into VTON-model.
 run the flask app: python flask_ap.py for Recommendation system
+run the streamlit app: streamlit run app.py for VTON
 
 
 
