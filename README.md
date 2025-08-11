@@ -11,7 +11,7 @@ After downloading, place them in: checkpoints folder in app folder
 ## Super-Resolution
 The super resolution model can be donwloaded from **[this link](<https://drive.google.com/file/d/1BJS9t1MrNtogHVVsiFSU5gxPCNlnH7cW/view?usp=sharing>)**.
 
-After downloading, unzip the folder and place the super-resolution model in VTON-Model folder.
+After downloading, unzip the folder and place the super-resolution model in app folder.
 
 ## ⚙️ Installation
 pip install -r requirements.txt
