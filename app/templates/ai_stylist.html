@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+
+{% block title %}AI Stylist Pro{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai_stylist_theme.css') }}">
+    <svg width="0" height="0" style="position:absolute"><defs>
+        <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></symbol>
+        <symbol id="icon-like" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></symbol>
+        <symbol id="icon-dislike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v7a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></symbol>
+        <symbol id="icon-choose" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></symbol>
+        <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></symbol>
+    </defs></svg>
+{% endblock %}
+
+{% block content %}
+    <div class="loader-overlay"><div class="loader"></div></div>
+    <div id="toast-container"></div>
+
+    <div class="stylist-container">
+        <aside class="sidebar">
+            <div class="sidebar-scrollable-content">
+                <div class="sidebar-header">
+                    <svg width="32" height="32" fill="var(--primary-color)"><use xlink:href="#icon-user"></use></svg>
+                    <h2>Your Style Profile</h2>
+                </div>
+                <form id="profile-form" class="profile-form ajax-form" action="{{ url_for('update') }}" method="post">
+                    <input type="hidden" name="action" value="generate">
+                    <div class="form-group"><label for="age">Age</label><input type="number" id="age" name="age" value="{{ session.user_profile.age }}"></div>
+                    <div class="form-group"><label for="gender">Gender</label><select id="gender" name="gender"><option value="female" {% if session.user_profile.gender == 'female' %}selected{% endif %}>Female</option><option value="male" {% if session.user_profile.gender == 'male' %}selected{% endif %}>Male</option></select></div>
+                    <div class="form-group"><label for="occasion">Occasion</label><input type="text" id="occasion" name="occasion" value="{{ session.user_profile.occasion }}"></div>
+                    <div class="form-group"><label for="color">Color Preference</label><input type="text" id="color" name="color" value="{{ session.user_profile.color }}"></div>
+                    <div class="form-group"><label for="style_type">Style</label><select id="style_type" name="style_type"><option value="casual" {% if session.user_profile.style_type == 'casual' %}selected{% endif %}>Casual</option><option value="formal" {% if session.user_profile.style_type == 'formal' %}selected{% endif %}>Formal</option><option value="streetwear" {% if session.user_profile.style_type == 'streetwear' %}selected{% endif %}>Streetwear</option></select></div>
+                    <div class="form-group"><label for="comments">Any other preferences?</label><textarea id="comments" name="comments">{{ session.user_profile.comments }}</textarea></div>
+                    </form>
+            </div>
+
+            <div class="sidebar-sticky-footer">
+                <button type="submit" form="profile-form" class="btn btn-primary btn-block">Generate My Outfit</button>
+                <form class="ajax-form" action="{{ url_for('update') }}" method="post" style="margin-top: 0.5rem;">
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="btn btn-danger btn-block">Start Over</button>
+                </form>
+            </div>
+        </aside>
+
+        <section class="stylist-main-content">
+            <p style="margin-bottom: 2rem;">Your personalized fashion assistant, powered by AI.</p>
+            <div id="dynamic-content">
+                {% include '_dynamic_content.html' %}
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// The JavaScript from your original index.html goes here.
+// It will work as-is because the element IDs and class names are the same.
+document.addEventListener('DOMContentLoaded', () => {
+    const loader = document.querySelector('.loader-overlay');
+    const dynamicContent = document.getElementById('dynamic-content');
+    
+    document.addEventListener('submit', async (e) => {
+        if (!e.target.classList.contains('ajax-form')) return;
+
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+
+        loader.classList.add('active');
+        if (dynamicContent) dynamicContent.classList.add('loading');
+
+        try {
+            const response = await fetch(form.getAttribute('action'),{
+                method: form.method,
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const data = await response.json();
+            
+            if (dynamicContent) {
+                dynamicContent.innerHTML = data.html;
+                dynamicContent.querySelector('.similar-grid')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            if (data.toast) {
+                showToast(data.toast.text, data.toast.type);
+            }
+        } catch (error) {
+            console.error('Form submission error:', error);
+            showToast('An error occurred. Please try again.', 'error');
+        } finally {
+            loader.classList.remove('active');
+            if (dynamicContent) dynamicContent.classList.remove('loading');
+        }
+    });
+
+    function showToast(message, type = 'success') {
+        const toastContainer = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

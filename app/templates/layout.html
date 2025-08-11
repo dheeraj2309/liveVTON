@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Fashion Suite{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <header class="main-header">
+        <h1>🤖 AI Fashion Suite</h1>
+        <nav class="tabs">
+            <a href="{{ url_for('ai_stylist_page') }}" class="tab-link {% if request.endpoint == 'ai_stylist_page' %}active{% endif %}">✨ AI Stylist Pro</a>
+            <a href="{{ url_for('skin_tone_reco_page') }}" class="tab-link {% if request.endpoint == 'skin_tone_reco_page' %}active{% endif %}">🎨 Skin-Tone Recs</a>
+            <a href="{{ url_for('virtual_tryon_page') }}" class="tab-link {% if request.endpoint == 'virtual_tryon_page' %}active{% endif %}">👕 Virtual Try-On</a>
+            
+        </nav>
+    </header>
+
+    <main class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

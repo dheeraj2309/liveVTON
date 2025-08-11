@@ -1,0 +1,86 @@
+/* AI Stylist Page Specific Styles */
+.stylist-container {
+    display: flex;
+    gap: 2rem;
+    background-color: var(--light-color);
+    border-radius: var(--border-radius);
+    overflow: hidden; /* To contain the sidebar */
+    /* Set fixed height relative to viewport for independent scrolling */
+    height: calc(100vh - 150px);
+}
+
+.sidebar {
+    width: 380px;
+    flex-shrink: 0;
+    background: #fdfdff;
+    border-right: 1px solid var(--border-color);
+    /* Setup for internal scrolling */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0; /* Padding is now on inner elements */
+}
+
+.sidebar-scrollable-content {
+    flex-grow: 1; /* Allows this area to fill available space */
+    overflow-y: auto; /* Adds a scrollbar only when needed */
+    padding: 2rem;
+}
+
+.sidebar-sticky-footer {
+    flex-shrink: 0; /* Prevents this area from shrinking */
+    padding: 1rem 2rem;
+    background-color: var(--light-color);
+    border-top: 1px solid var(--border-color);
+}
+
+.stylist-main-content {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto; /* Allows the main content to scroll independently */
+}
+
+/* Grids and Cards Styles */
+.grid-container { display: grid; gap: 2rem; }
+.outfit-grid { grid-template-columns: 1fr 1fr; }
+.similar-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.item-card { background: var(--light-color); border-radius: var(--border-radius); overflow: hidden; box-shadow: var(--shadow); position: relative; transition: transform 0.3s, box-shadow 0.3s; }
+.item-card:hover { transform: translateY(-5px); box-shadow: 0 12px 28px rgba(0,0,0,0.1); }
+.item-card__image-wrapper { position: relative; background-color: #eee; }
+
+.item-card__image {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: contain; /* Ensures full image is visible */
+    background-color: #f8f9fa;
+}
+
+.item-card__content { padding: 1rem; text-align: center; }
+.item-card__prompt { font-size: 0.8rem; color: #6c757d; font-style: italic; }
+.item-card__actions { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1)); display: flex; align-items: center; justify-content: center; gap: 1rem; opacity: 0; visibility: hidden; transition: all 0.3s; }
+.item-card:hover .item-card__actions { opacity: 1; visibility: visible; }
+.action-btn { background-color: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.action-btn:hover { transform: scale(1.1); }
+.action-btn svg { width: 22px; height: 22px; }
+.action-btn.like svg { stroke: var(--success-color); }
+.action-btn.dislike svg { stroke: var(--danger-color); }
+.action-btn.choose svg { stroke: #ffc107; fill: #ffc107; }
+.item-card__chosen-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(40, 167, 69, 0.8); color: var(--light-color); display: flex; align-items: center; justify-content: center; }
+.item-card__chosen-overlay svg { width: 60px; height: 60px; }
+.final-outfit-card { text-align: center; padding: 4rem; background-color: #e2f0d9; border-radius: var(--border-radius); }
+.final-outfit-card__title { color: var(--success-color); }
+
+/* Loader and Toast styles */
+.loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s; backdrop-filter: blur(5px); }
+.loader-overlay.active { opacity: 1; visibility: visible; }
+.loader { width: 50px; height: 50px; border: 5px solid var(--border-color); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#toast-container { position: fixed; top: 2rem; right: 2rem; z-index: 1001; display: flex; flex-direction: column; gap: 1rem; }
+.toast { padding: 1rem 1.5rem; border-radius: 8px; color: var(--light-color); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transform: translateX(120%); transition: transform 0.5s ease-in-out; }
+.toast.show { transform: translateX(0); }
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--danger-color); }
+#dynamic-content { transition: opacity 0.3s; }
+#dynamic-content.loading { opacity: 0.5; }

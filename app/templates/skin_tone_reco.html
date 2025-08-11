@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Skin Tone Recommendations{% endblock %}
+
+{% block content %}
+<div class="reco-container">
+    <h2>👗 Skin Tone-Based Fashion Recommendation</h2>
+    <p>Upload a clear photo of your face to get color recommendations tailored to you.</p>
+
+    <form action="{{ url_for('skin_tone_reco_page') }}" method="post" enctype="multipart/form-data" class="reco-form">
+        <div class="form-group">
+            <label>Select Your Gender:</label>
+            <div class="gender-selection">
+                <input type="radio" id="male" name="gender" value="male" required>
+                <label for="male">Male</label>
+                <input type="radio" id="female" name="gender" value="female" required>
+                <label for="female">Female</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="user_face_file">Upload Face Photo:</label>
+            <input type="file" id="user_face_file" name="user_face_file" class="form-control" required accept="image/*">
+        </div>
+        <button type="submit" class="btn btn-primary">Get Recommendations</button>
+    </form>
+
+    {% if results %}
+    <hr>
+    <div class="reco-results">
+        <h3>Your Results</h3>
+        <p class="detected-tone">🎯 Detected Skin Tone: <strong>{{ results.tone }}</strong></p>
+        
+        {% if results.recommendations %}
+            <h4>Outfit Color Combinations:</h4>
+            <ul class="combo-list">
+                {% for combo in results.recommendations %}
+                    <li><strong>Combo {{ loop.index }}:</strong> 🟦 <em>{{ combo.upperwear }}</em> upperwear + 👖 <em>{{ combo.bottomwear }}</em> bottomwear</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Sorry, no recommendations found for this gender and skin tone.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

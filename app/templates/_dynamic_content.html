@@ -1,0 +1,97 @@
+{% if session.topwear.status == 'pending' %}
+    <div style="text-align: center; padding: 4rem; background: #fff; border-radius: var(--border-radius);">
+        <h2>Welcome!</h2>
+        <p>Fill out your profile on the left to get your first AI-generated outfit.</p>
+    </div>
+{% else %}
+    <h2>✨ Your Recommended Outfit</h2>
+    <div class="grid-container outfit-grid">
+        {% for item_type in ['topwear', 'bottomwear'] %}
+        <div class="item-card">
+            {% set item = session[item_type] %}
+            <div class="item-card__image-wrapper">
+                <img class="item-card__image" src="{{ url_for('serve_image', filename=item.path) }}" alt="{{ item_type }}">
+                
+                {% if item.status == 'initial' %}
+                <div class="item-card__actions">
+                    <form class="ajax-form" action="{{ url_for('update') }}" method="post">
+                        <input type="hidden" name="action" value="interact">
+                        <input type="hidden" name="item_type" value="{{ item_type }}">
+                        <input type="hidden" name="interaction" value="like">
+                        <button type="submit" class="action-btn like" aria-label="Like"><svg><use xlink:href="#icon-like"></use></svg></button>
+                    </form>
+                    <form class="ajax-form" action="{{ url_for('update') }}" method="post">
+                        <input type="hidden" name="action" value="interact">
+                        <input type="hidden" name="item_type" value="{{ item_type }}">
+                        <input type="hidden" name="interaction" value="dislike">
+                        <button type="submit" class="action-btn dislike" aria-label="Dislike"><svg><use xlink:href="#icon-dislike"></use></svg></button>
+                    </form>
+                </div>
+                {% elif item.status == 'chosen' %}
+                <div class="item-card__chosen-overlay">
+                    <svg><use xlink:href="#icon-check"></use></svg>
+                </div>
+                {% endif %}
+            </div>
+            <div class="item-card__content">
+                <h4>{{ item_type.capitalize() }}</h4>
+                <p class="item-card__prompt">"{{ item.prompt }}"</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <hr>
+
+    {% set feedback_type = '' %}
+    {% if session.topwear.status == 'feedback' %}{% set feedback_type = 'topwear' %}{% endif %}
+    {% if session.bottomwear.status == 'feedback' %}{% set feedback_type = 'bottomwear' %}{% endif %}
+
+    {% if feedback_type %}
+        <h2>Refine Your {{ feedback_type.capitalize() }}</h2>
+        <form class="ajax-form" action="{{ url_for('update') }}" method="post" style="max-width: 600px;">
+            <input type="hidden" name="action" value="refine">
+            <input type="hidden" name="item_type" value="{{ feedback_type }}">
+            <div class="form-group">
+                <label for="feedback">What would you like to change?</label>
+                <input type="text" id="feedback" name="feedback" placeholder="e.g., 'something darker', 'a different style'" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate New Suggestion</button>
+        </form>
+        <hr>
+    {% endif %}
+
+    {% if similar_items_data and similar_items_data.paths %}
+        {% set item_type = similar_items_data.type %}
+        <h2>Discover Similar {{ item_type.capitalize() }}s</h2>
+        <p>Choose the one you like best to finalize your {{ item_type }}.</p>
+        <div class="grid-container similar-grid">
+            {% for path in similar_items_data.paths %}
+            <div class="item-card">
+                <div class="item-card__image-wrapper">
+                    <img class="item-card__image" src="{{ url_for('serve_image', filename=path) }}" alt="Similar {{ item_type }}">
+                    <div class="item-card__actions">
+                        <form class="ajax-form" action="{{ url_for('update') }}" method="post">
+                            <input type="hidden" name="action" value="choose">
+                            <input type="hidden" name="item_type" value="{{ item_type }}">
+                            <input type="hidden" name="chosen_path" value="{{ path }}">
+                            <button type="submit" class="action-btn choose" aria-label="Choose this one"><svg><use xlink:href="#icon-choose"></use></svg></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <hr>
+    {% endif %}
+
+    {% if session.topwear.status == 'chosen' and session.bottomwear.status == 'chosen' %}
+        <div class="final-outfit-card">
+            <h2 class="final-outfit-card__title">🎉 Your Final Outfit Is Selected!</h2>
+            <p>You can now save your masterpiece.</p>
+            <form class="ajax-form" action="{{ url_for('update') }}" method="post">
+                <input type="hidden" name="action" value="save">
+                <button type="submit" class="btn btn-primary">Save My Final Outfit</button>
+            </form>
+        </div>
+    {% endif %}
+{% endif %}

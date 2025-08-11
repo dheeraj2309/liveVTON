@@ -1,0 +1,154 @@
+{% extends "layout.html" %}
+
+{% block title %}Virtual Try-On{% endblock %}
+
+{% block content %}
+<div class="vto-container">
+    <aside class="sidebar vto-sidebar">
+        <div class="sidebar-scrollable-content">
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab-link active" onclick="openSidebarTab(event, 'Recommended')">Recommended</button>
+                <button class="sidebar-tab-link" onclick="openSidebarTab(event, 'All')">All Clothes</button>
+            </div>
+
+            <form action="{{ url_for('virtual_tryon_page') }}" method="post" id="vto-form" enctype="multipart/form-data">
+                <div id="Recommended" class="sidebar-tab-content" style="display: block;">
+                    <div class="cloth-grid" id="reco-cloth-grid">
+                        {% for cloth in initial_reco_cloths %}
+                        <div class="cloth-item">
+                            <input type="radio" name="cloth_name" value="{{ cloth }}" id="reco-cloth-{{ loop.index }}" class="cloth-radio">
+                            <label for="reco-cloth-{{ loop.index }}">
+                                <img src="{{ url_for('serve_image', filename=cloth) }}" alt="{{ cloth }}">
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if reco_cloths_total > 30 %}
+                    <button type="button" class="btn btn-secondary btn-block load-more-btn" data-type="reco" data-offset="30">Load More</button>
+                    {% endif %}
+                </div>
+
+                <div id="All" class="sidebar-tab-content">
+                    <div class="cloth-grid" id="all-cloth-grid">
+                        {% for cloth in initial_all_cloths %}
+                        <div class="cloth-item">
+                            <input type="radio" name="cloth_name" value="{{ cloth }}" id="all-cloth-{{ loop.index }}" class="cloth-radio">
+                            <label for="all-cloth-{{ loop.index }}">
+                                <img src="{{ url_for('serve_cloth_image', filename=cloth) }}" alt="{{ cloth }}">
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if all_cloths_total > 30 %}
+                    <button type="button" class="btn btn-secondary btn-block load-more-btn" data-type="all" data-offset="30">Load More</button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="sidebar-sticky-footer">
+            <div class="form-group">
+                <label>1. Select Media Type:</label>
+                <div class="media-type-selection">
+                    <input type="radio" id="media_photo" name="media_type" form="vto-form" value="photo" checked>
+                    <label for="media_photo">Photo</label>
+                    <input type="radio" id="media_video" name="media_type" form="vto-form" value="video">
+                    <label for="media_video">Video</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_file">2. Upload Your File:</label>
+                <input type="file" id="user_file" name="user_file" form="vto-form" class="form-control" required accept="image/*">
+            </div>
+            <button type="submit" form="vto-form" class="btn btn-primary btn-block">3. Try It On!</button>
+        </div>
+    </aside>
+
+    <section class="vto-main-content">
+        <h2>Your Result</h2>
+        <div class="result-display">
+            {% if result_path %}
+                {% if result_type == 'photo' %}
+                    <img src="{{ url_for('static', filename=result_path) }}" alt="Virtual Try-on Result">
+                {% elif result_type == 'video' %}
+                    <video controls muted autoplay loop>
+                        <source src="{{ url_for('static', filename=result_path) }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+            {% else %}
+                <p>Your try-on result will appear here.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openSidebarTab(evt, tabName) {
+        const tabcontent = document.getElementsByClassName("sidebar-tab-content");
+        for (let i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        const tablinks = document.getElementsByClassName("sidebar-tab-link");
+        for (let i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Logic for the 'Load More' buttons ---
+        document.querySelectorAll('.load-more-btn').forEach(button => {
+            button.addEventListener('click', async () => {
+                const clothType = button.dataset.type;
+                let offset = parseInt(button.dataset.offset);
+                const grid = document.getElementById(`${clothType}-cloth-grid`);
+                
+                const response = await fetch(`/load_cloths?type=${clothType}&offset=${offset}`);
+                const data = await response.json();
+
+                if (data.cloths && data.cloths.length > 0) {
+                    data.cloths.forEach((cloth, index) => {
+                        const uniqueId = `${clothType}-cloth-${offset + index}`;
+                        const clothItemHTML = `
+                            <div class="cloth-item">
+                                <input type="radio" name="cloth_name" value="${cloth}" id="${uniqueId}" class="cloth-radio">
+                                <label for="${uniqueId}">
+                                    <img src="/cloth/${cloth}" alt="${cloth}">
+                                </label>
+                            </div>
+                        `;
+                        grid.insertAdjacentHTML('beforeend', clothItemHTML);
+                    });
+                    button.dataset.offset = offset + data.cloths.length;
+                } 
+                
+                if (!data.cloths || data.cloths.length < 30) {
+                    button.style.display = 'none';
+                }
+            });
+        });
+
+        // --- Logic for the Photo/Video file input ---
+        const photoRadio = document.getElementById('media_photo');
+        const videoRadio = document.getElementById('media_video');
+        const fileInput = document.getElementById('user_file');
+
+        photoRadio.addEventListener('change', () => {
+            if (photoRadio.checked) {
+                fileInput.setAttribute('accept', 'image/*');
+            }
+        });
+
+        videoRadio.addEventListener('change', () => {
+            if (videoRadio.checked) {
+                fileInput.setAttribute('accept', 'video/mp4,video/mov,video/avi');
+            }
+        });
+    });
+</script>
+{% endblock %}
