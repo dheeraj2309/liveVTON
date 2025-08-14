@@ -14,9 +14,6 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
-# <<< NEW: Import for CUDA-accelerated OpenCV functions >>>
-import cv2.cuda 
-
 import torchvision.transforms as transforms
 from pipelines.dmvton_pipeline_warp import DMVTONPipeline
 from utils.torch_utils import select_device,get_ckpt, load_ckpt
@@ -303,9 +300,8 @@ def real_time(cloth_name,device,pipeline=DMVTONPipeline()):
     load_ckpt(gen_model, gen_ckpt)
     gen_model.eval()
     
-    # <<< MODIFIED: Removed upscaler from real-time to prioritize speed >>>
-    # upscaler=run_realesrgan(gpu_id=0) 
     print("models loaded")
+    print("--- Using CPU for Optical Flow. Performance may be impacted. ---")
 
     with torch.no_grad():
         # --- Cloth Pre-processing ---
@@ -325,16 +321,11 @@ def real_time(cloth_name,device,pipeline=DMVTONPipeline()):
         # --- Real-time Loop Setup ---
         cap = cv2.VideoCapture(0)
         
-        # <<< NEW: State variables for optical flow >>>
-        prev_gray_gpu = None
+        # --- State variables for CPU-based optical flow ---
+        prev_gray = None
         prev_tryon_output = None
         
-        # <<< NEW: Optical Flow Calculator Setup (GPU-accelerated) >>>
-        flow_calculator = cv2.cuda.FarnebackOpticalFlow_create(5, 0.5, False, 15, 3, 5, 1.2, 0)
-        
-        # <<< NEW: Blending factor for smoothing >>>
-        # A higher alpha relies more on the newly generated frame (less smooth, more responsive).
-        # A lower alpha relies more on the warped previous frame (smoother, but can lag).
+        # Blending factor for smoothing
         alpha = 0.7 
 
         while True:
@@ -350,36 +341,26 @@ def real_time(cloth_name,device,pipeline=DMVTONPipeline()):
             person_img_pil = Image.fromarray(person_img_rgb).convert('RGB')
             person_img_tensor = transform_image(person_img_pil).unsqueeze(0).to(device)
 
-            # --- VTON Generation ---
+            # --- VTON Generation (on GPU) ---
             with cupy.cuda.Device(int(device.split(':')[-1])):
                 p_tryon, _, _ = pipeline(warp_model, gen_model, person_img_tensor, cloth_img, cloth_mask, phase="test")
             
             img_tensor = p_tryon[0].squeeze()
             cv_img_rgb = (img_tensor.detach().cpu().permute(1, 2, 0).numpy() + 1) / 2
             current_tryon_output_rgb = (cv_img_rgb * 255).astype(np.uint8)
-            current_tryon_output = cv2.cvtColor(current_tryon_output_rgb, cv2.COLOR_RGB2BGR) # Now in BGR for OpenCV
+            current_tryon_output = cv2.cvtColor(current_tryon_output_rgb, cv2.COLOR_RGB2BGR) # BGR for OpenCV
             
-            print("tryon generated")
-            
-            # <<< NEW: Temporal Smoothing Logic using Optical Flow >>>
-            # 1. Prepare current frame for flow calculation (use the resized BGR frame)
+            # --- Temporal Smoothing Logic (CPU-Only) ---
             gray = cv2.cvtColor(person_img_resized, cv2.COLOR_BGR2GRAY)
-            current_gray_gpu = cv2.cuda_GpuMat()
-            current_gray_gpu.upload(gray)
-
-            # Default output is the newly generated frame
             final_output = current_tryon_output
-
-            # 2. If we have a previous frame, calculate flow and blend
-            if prev_gray_gpu is not None and prev_tryon_output is not None:
-                # Calculate flow on GPU
-                flow_gpu = flow_calculator.calc(prev_gray_gpu, current_gray_gpu, None)
+            
+            # Calculate optical flow on the CPU if we have a previous frame
+            if prev_gray is not None and prev_tryon_output is not None:
+                # Use cv2.calcOpticalFlowFarneback for CPU-based calculation
+                flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
                 
-                # Download flow to CPU for cv2.remap
-                flow_cpu = flow_gpu.download()
-
                 # Warp the previous try-on result using the calculated flow
-                warped_prev_output = cv2.remap(prev_tryon_output, flow_cpu, None, cv2.INTER_LINEAR)
+                warped_prev_output = cv2.remap(prev_tryon_output, flow, None, cv2.INTER_LINEAR)
                 
                 # Blend the current result with the warped previous result
                 final_output = cv2.addWeighted(current_tryon_output, alpha, warped_prev_output, 1 - alpha, 0)
@@ -387,63 +368,24 @@ def real_time(cloth_name,device,pipeline=DMVTONPipeline()):
             # --- Display and Update State ---
             display_output = cv2.resize(final_output, (192*2, 256*2))
             
-            # <<< MODIFIED: Show both original and smoothed VTON for comparison >>>
             cv2.imshow("Smoothed VTON", display_output)
             cv2.imshow("Original Feed", orig_frame)
 
             if cv2.waitKey(1) & 0xFF == ord("d"):
                 break
             
-            # <<< NEW: Update state for the next frame >>>
-            # The current grayscale frame becomes the previous one for the next iteration.
-            prev_gray_gpu = current_gray_gpu 
-            # The final blended output becomes the previous output for the next iteration.
+            # Update state for the next frame
+            prev_gray = gray
             prev_tryon_output = final_output
 
         cap.release()
         cv2.destroyAllWindows()
 
-            
-# e.g., 'image'
-
-
-
-
 def main():
     # Device
     device = select_device(0)
-
-    # Inference Pipeline
-    # process_photo("test13.jpg","00515_00",device)
-    # process_vid('8166002-hd_720_1366_25fps.mp4',"00019_00",device)
     real_time("00515_00",device)
-    # process_type=input()
-    # if process_type=="image":
-    #     process_photo("a.jpg","00033_00",pipeline,device)
-    # elif process_type=="video":
-    #     process_vid()
-
-
-
-    # Dataloader
-    # test_data = LoadVITONDataset(path=opt.dataroot, phase='test', size=(256, 192))
-    # data_loader = DataLoader(
-    #     test_data, batch_size=opt.batch_size, shuffle=False, num_workers=opt.workers
-    # )
-
-    # run_test_pf(
-    #     pipeline=pipeline,
-    #     data_loader=data_loader,
-    #     device=device,
-    #     log_path=log_path,
-    #     save_dir=opt.save_dir,
-    #     img_dir=Path(opt.dataroot) / 'test_img',
-    #     save_img=True,
-    # )
 
 
 if __name__ == "__main__":
     main()
-
-    # opt = TestOptions().parse_opt()
-    # main(opt)
